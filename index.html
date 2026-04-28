@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio | Future Vision</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .font-futuristic { font-family: 'Orbitron', sans-serif; }
+
+        /* Animated Background Gradient */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%);
+            z-index: -1;
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #3b82f6 0%, #a855f7 100%);
+            filter: blur(100px);
+            opacity: 0.15;
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from { transform: translate(-10%, -10%); }
+            to { transform: translate(20%, 20%); }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+        }
+
+        .hero-text {
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+        }
+
+        .btn-neon {
+            transition: all 0.3s ease;
+            border: 1px solid #3b82f6;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-neon:hover {
+            box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+            transform: translateY(-2px);
+            background: #3b82f6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-glow"></div>
+    <div class="blob"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex justify-between items-center glass px-6 py-3">
+            <div class="font-futuristic text-xl font-bold tracking-widest text-blue-400">CORE.OS</div>
+            <div class="space-x-8 hidden md:flex">
+                <a href="#home" class="hover:text-blue-400 transition">Home</a>
+                <a href="#projects" class="hover:text-blue-400 transition">Projects</a>
+                <a href="#about" class="hover:text-blue-400 transition">About</a>
+                <a href="mailto:your@email.com" class="btn-neon px-5 py-1 rounded-full text-sm">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center pt-20">
+        <div class="text-center px-4">
+            <h2 class="text-blue-400 font-futuristic tracking-[0.3em] mb-4 uppercase text-sm animate-pulse">System Online</h2>
+            <h1 class="text-6xl md:text-8xl font-futuristic font-bold mb-6 hero-text tracking-tighter">
+                CREATIVE <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">DEVELOPER</span>
+            </h1>
+            <p class="max-w-xl mx-auto text-slate-400 text-lg mb-10 leading-relaxed">
+                Building digital experiences that exist at the intersection of design and future technology. 
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <a href="#projects" class="btn-neon bg-blue-600 text-white px-10 py-4 rounded-xl font-bold">View Projects</a>
+                <a href="#" class="glass px-10 py-4 rounded-xl font-bold hover:bg-white/10 transition">Read Resume</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Teaser -->
+    <section id="projects" class="py-24 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h3 class="font-futuristic text-3xl">Selected Works</h3>
+                    <div class="h-1 w-20 bg-blue-500 mt-2"></div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Project Card 1 -->
+                <div class="glass p-4 group cursor-pointer overflow-hidden">
+                    <div class="h-48 rounded-xl bg-slate-800 mb-4 overflow-hidden">
+                        <!-- Replace with your project image -->
+                        <div class="w-full h-full bg-gradient-to-br from-blue-900/50 to-slate-800 flex items-center justify-center group-hover:scale-110 transition duration-500">
+                            <span class="text-slate-500 font-futuristic">Project Preview</span>
+                        </div>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2">Neural Interface UI</h4>
+                    <p class="text-slate-400 text-sm mb-4">A futuristic dashboard built with React and Three.js.</p>
+                    <div class="flex gap-2">
+                        <span class="text-[10px] border border-blue-500/50 px-2 py-1 rounded text-blue-400 uppercase">React</span>
+                        <span class="text-[10px] border border-blue-500/50 px-2 py-1 rounded text-blue-400 uppercase">Web3</span>
+                    </div>
+                </div>
+
+                <!-- Project Card 2 -->
+                <div class="glass p-4 group cursor-pointer">
+                    <div class="h-48 rounded-xl bg-slate-800 mb-4 overflow-hidden">
+                        <div class="w-full h-full bg-gradient-to-br from-purple-900/50 to-slate-800 flex items-center justify-center group-hover:scale-110 transition duration-500">
+                            <span class="text-slate-500 font-futuristic">Project Preview</span>
+                        </div>
+                    </div>
+                    <h4 class="text-xl font-bold mb-2">Quantum Analytics</h4>
+                    <p class="text-slate-400 text-sm mb-4">Real-time data visualization engine for high-speed metrics.</p>
+                    <div class="flex gap-2">
+                        <span class="text-[10px] border border-purple-500/50 px-2 py-1 rounded text-purple-400 uppercase">Python</span>
+                        <span class="text-[10px] border border-purple-500/50 px-2 py-1 rounded text-purple-400 uppercase">D3.js</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-10 border-t border-white/5 text-center">
+        <p class="text-slate-500 text-sm font-futuristic tracking-widest">
+            &copy; 2024 INITIALIZING SUCCESS...
+        </p>
+    </footer>
+
+</body>
+</html>

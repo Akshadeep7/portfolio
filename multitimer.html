@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --tile: #2a2a2a;
+    --tile-active: #1e1e1e;
+    --cyan: #00e5ff;
+    --white: #f0f0f0;
+    --red: #ff2244;
+  }
+
+  body {
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    font-family: 'Share Tech Mono', monospace;
+    padding: 30px 20px 60px;
+  }
+
+  .timer-entry {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 28px;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; } }
+
+  .serial {
+    width: 30px;
+    text-align: center;
+    font-size: 17px;
+    color: #555;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s;
+  }
+  .serial .num { display: block; }
+  .serial .x   { display: none; font-size: 20px; color: var(--red); }
+  .serial:hover .num { display: none; }
+  .serial:hover .x   { display: block; }
+
+  .timer-face { display: flex; flex-direction: column; align-items: center; }
+  .face-row   { display: flex; align-items: center; gap: 8px; }
+
+  .digit-tile {
+    width: 100px; height: 100px;
+    background: var(--tile);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .digit-tile input {
+    width: 100%; height: 100%;
+    background: transparent; border: none; outline: none;
+    color: var(--white);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 52px; text-align: center;
+    caret-color: var(--cyan);
+  }
+  .digit-tile input::selection { background: rgba(0,229,255,0.25); }
+
+  .digit-static {
+    width: 100px; height: 100px;
+    background: var(--tile-active);
+    border-radius: 8px;
+    display: none; align-items: center; justify-content: center;
+    font-size: 52px; color: var(--white);
+    user-select: none;
+  }
+
+  .colon {
+    font-size: 46px; color: var(--white);
+    user-select: none; margin: 0 2px; line-height: 100px;
+  }
+
+  .labels {
+    display: flex; margin-top: 5px;
+    color: #444; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .lbl { width: 100px; text-align: center; }
+  .lbl-gap { width: 62px; }
+
+  .controls { display: flex; flex-direction: column; gap: 10px; }
+  .btn {
+    width: 80px; height: 44px;
+    background: transparent; border: 2px solid var(--cyan); border-radius: 6px;
+    color: var(--white); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+  }
+  .btn:hover { background: rgba(0,229,255,0.12); }
+  .btn:active { transform: scale(0.95); }
+  .btn svg { pointer-events: none; }
+
+  @keyframes blink-red {
+    0%, 100% { color: var(--red); opacity: 1; }
+    50% { opacity: 0.15; }
+  }
+  .expired .digit-static,
+  .expired .colon {
+    animation: blink-red 0.6s ease-in-out infinite;
+  }
+
+  #add-btn {
+    width: 140px; height: 44px;
+    background: transparent; border: 2px solid var(--cyan); border-radius: 6px;
+    color: var(--cyan); font-family: 'Share Tech Mono', monospace;
+    font-size: 26px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 4px;
+    transition: background 0.15s, transform 0.1s;
+  }
+  #add-btn:hover { background: rgba(0,229,255,0.12); }
+  #add-btn:active { transform: scale(0.95); }
+</style>
+</head>
+<body>
+
+<div id="timers"></div>
+<button id="add-btn">+</button>
+
+<script>
+let idCounter = 0;
+const states = {};
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function createTimer() {
+  const id = ++idCounter;
+  states[id] = { interval: null, running: false, remaining: 0 };
+
+  const entry = document.createElement('div');
+  entry.className = 'timer-entry';
+  entry.dataset.id = id;
+
+  /* -- serial -- */
+  const serial = document.createElement('div');
+  serial.className = 'serial';
+  serial.innerHTML = `<span class="num">${id}.</span><span class="x">✕</span>`;
+  serial.addEventListener('click', () => removeTimer(id));
+
+  /* -- face -- */
+  const face = document.createElement('div');
+  face.className = 'timer-face';
+  const faceRow = document.createElement('div');
+  faceRow.className = 'face-row';
+
+  function makePair(suffix) {
+    const tile = document.createElement('div');
+    tile.className = 'digit-tile';
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.inputMode = 'numeric'; inp.maxLength = 2; inp.value = '00';
+    inp.addEventListener('input', () => { inp.value = inp.value.replace(/\D/g, ''); });
+    inp.addEventListener('blur', () => {
+      const max = suffix === 'hh' ? 99 : 59;
+      let v = parseInt(inp.value) || 0;
+      if (v > max) v = max;
+      inp.value = pad(v);
+    });
+    tile.appendChild(inp);
+    const stat = document.createElement('div');
+    stat.className = 'digit-static';
+    stat.textContent = '00';
+    tile.appendChild(stat);
+    return { tile, inp, stat };
+  }
+
+  const hh = makePair('hh'), mm = makePair('mm'), ss = makePair('ss');
+
+  const c1 = document.createElement('div'); c1.className = 'colon'; c1.textContent = ':';
+  const c2 = document.createElement('div'); c2.className = 'colon'; c2.textContent = ':';
+  faceRow.append(hh.tile, c1, mm.tile, c2, ss.tile);
+
+  const labels = document.createElement('div');
+  labels.className = 'labels';
+  labels.innerHTML = `<span class="lbl">HH</span><span class="lbl-gap"></span><span class="lbl">MM</span><span class="lbl-gap"></span><span class="lbl">SS</span>`;
+  face.append(faceRow, labels);
+
+  /* -- controls -- */
+  const controls = document.createElement('div');
+  controls.className = 'controls';
+
+  const btnStop = document.createElement('button');
+  btnStop.className = 'btn';
+  btnStop.innerHTML = `<svg width="18" height="18" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" rx="2" fill="white"/></svg>`;
+
+  const btnPlay = document.createElement('button');
+  btnPlay.className = 'btn';
+  btnPlay.innerHTML = `
+    <svg class="iplay" width="18" height="18" viewBox="0 0 20 20"><polygon points="5,3 17,10 5,17" fill="white"/></svg>
+    <svg class="ipause" width="18" height="18" viewBox="0 0 20 20" style="display:none">
+      <rect x="4" y="3" width="4" height="14" rx="1" fill="white"/>
+      <rect x="12" y="3" width="4" height="14" rx="1" fill="white"/>
+    </svg>`;
+  controls.append(btnStop, btnPlay);
+  entry.append(serial, face, controls);
+
+  /* -- helpers -- */
+  const iplay  = () => btnPlay.querySelector('.iplay');
+  const ipause = () => btnPlay.querySelector('.ipause');
+
+  function showStatic(show) {
+    [hh, mm, ss].forEach(({ inp, stat }) => {
+      inp.style.display = show ? 'none' : '';
+      stat.style.display = show ? 'flex' : 'none';
+    });
+  }
+
+  function updateDisplay() {
+    const s = states[id];
+    hh.stat.textContent = pad(Math.floor(s.remaining / 3600));
+    mm.stat.textContent = pad(Math.floor((s.remaining % 3600) / 60));
+    ss.stat.textContent = pad(s.remaining % 60);
+  }
+
+  function setExpired(val) {
+    val ? faceRow.classList.add('expired') : faceRow.classList.remove('expired');
+  }
+
+  function finish() {
+    const s = states[id];
+    clearInterval(s.interval); s.interval = null; s.running = false;
+    iplay().style.display = ''; ipause().style.display = 'none';
+    setExpired(true);
+  }
+
+  function tick() {
+    const s = states[id];
+    if (s.remaining <= 0) { finish(); return; }
+    s.remaining--;
+    updateDisplay();
+    if (s.remaining === 0) finish();
+  }
+
+  btnPlay.addEventListener('click', () => {
+    const s = states[id];
+    if (!s.running) {
+      if (!s.interval) {
+        [hh.inp, mm.inp, ss.inp].forEach(i => i.dispatchEvent(new Event('blur')));
+        s.remaining = (parseInt(hh.inp.value)||0)*3600 + (parseInt(mm.inp.value)||0)*60 + (parseInt(ss.inp.value)||0);
+        if (!s.remaining) return;
+        setExpired(false); updateDisplay(); showStatic(true);
+      }
+      s.running = true;
+      iplay().style.display = 'none'; ipause().style.display = '';
+      s.interval = setInterval(tick, 1000);
+    } else {
+      s.running = false;
+      iplay().style.display = ''; ipause().style.display = 'none';
+      clearInterval(s.interval); s.interval = -1;
+    }
+  });
+
+  btnStop.addEventListener('click', () => {
+    const s = states[id];
+    clearInterval(s.interval); s.interval = null; s.running = false; s.remaining = 0;
+    setExpired(false);
+    iplay().style.display = ''; ipause().style.display = 'none';
+    showStatic(false);
+    hh.inp.value = mm.inp.value = ss.inp.value = '00';
+  });
+
+  return entry;
+}
+
+function removeTimer(id) {
+  const s = states[id];
+  if (s?.interval) clearInterval(s.interval);
+  delete states[id];
+  document.querySelector(`.timer-entry[data-id="${id}"]`)?.remove();
+  renumber();
+}
+
+function renumber() {
+  document.querySelectorAll('.timer-entry').forEach((el, i) => {
+    el.querySelector('.num').textContent = `${i + 1}.`;
+  });
+}
+
+document.getElementById('add-btn').addEventListener('click', () => {
+  document.getElementById('timers').appendChild(createTimer());
+});
+
+// start with one
+document.getElementById('timers').appendChild(createTimer());
+</script>
+</body>
+</html>
